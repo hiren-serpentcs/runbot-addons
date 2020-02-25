@@ -58,15 +58,16 @@ class RunbotRepo(models.Model):
 
     def _git(self, cmd):
         """Rewriting the parent method to get merge_request from gitlab"""
-        repos_gitlab = self.filtered('uses_gitlab')
-        for repo_gitlab in repos_gitlab:
-            cmd_gitlab = cmd.copy()
-            if ('fetch' in cmd_gitlab
-                    and cmd_gitlab[-1] == '+refs/pull/*/head:refs/pull/*'):
-                cmd_gitlab.pop()
-                cmd_gitlab.append('+refs/merge-requests/*/head:refs/pull/*')
-            return super(RunbotRepo, repos_gitlab)._git(cmd_gitlab)
-        return super(RunbotRepo, self - repos_gitlab)._git(cmd)
+        for repo in self:
+            if repo.uses_gitlab:
+                cmd_gitlab = cmd.copy()
+                if ('fetch' in cmd_gitlab
+                        and cmd_gitlab[-1] == '+refs/pull/*/head:refs/pull/*'):
+                    cmd_gitlab.pop()
+                    cmd_gitlab.append(
+                        '+refs/merge-requests/*/head:refs/pull/*')
+                return super(RunbotRepo, self)._git(cmd_gitlab)
+            return super(RunbotRepo, self)._git(cmd)
 
     def _github(self, url, payload=None, ignore_errors=False):
         """This method is the same as the one in the odoo-extra/runbot.py

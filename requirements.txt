@@ -1,0 +1,4 @@
+matplotlib==2.2.2
+travis2docker==4.1.0
+zc.recipe.egg
+
